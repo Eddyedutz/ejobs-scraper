@@ -1,0 +1,38 @@
+name: Daily Job Scraper
+
+on:
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Allows you to run it manually to test
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "Scraper Bot"
+          git config --global user.email "bot@noreply.github.com"
+          git add ejobs_data.csv
+          git commit -m "Updated job stats: $(date)" || exit 0
+          git push
